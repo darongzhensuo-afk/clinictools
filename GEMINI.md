@@ -10,5 +10,8 @@
 - **Taiwan Context:** Be aware of Taiwan's healthcare system (NHI) and local guidelines (e.g., Taiwanese Society of Cardiology) if relevant.
 - **Tools:** Prefer creating small, reusable scripts (Python/JS) for calculators or data tasks to demonstrate CLI utility.
 
+## Special Directives
+- **"save":** When the user says "save", compile a concise summary of the session's work and append it to the **Development History** section of `PROGRESS.md`. This file serves as the unified source of truth for project status, medical logic, and history.
+
 ## Testing Focus
 - The user is currently testing the "usefulness" of this CLI. Focus on high-value, time-saving tasks.
