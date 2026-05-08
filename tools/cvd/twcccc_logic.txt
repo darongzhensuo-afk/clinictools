@@ -1,0 +1,72 @@
+TwCCCC (Taiwan Chin-Shan Community Cardiovascular Cohort) 10-Year CAD Risk Calculation Logic
+Source: Acta Cardiol Sin 2023;39:496 (Verified by clinical chart image)
+
+1. Point-Based Scoring System (Ages 35-79)
+------------------------------------------
+
+A. Age
+   - 35-39: 0 pts
+   - 40-44: 1 pt
+   - 45-49: 2 pts
+   - 50-54: 3 pts
+   - 55-59: 4 pts
+   - 60-64: 5 pts
+   - 65-69: 6 pts
+   - 70-74: 7 pts
+   - >= 75: 8 pts
+
+B. Sex
+   - Male (男): +3 pts
+   - Female (女): 0 pts
+
+C. BMI
+   - < 22: 0 pts
+   - 22 - 25.9: +1 pt
+   - >= 26: +2 pts
+
+D. Smoking (吸菸)
+   - Yes (有): +2 pts
+   - No (無): 0 pts
+
+E. Systolic Blood Pressure (SBP)
+   - < 110 mmHg: 0 pts
+   - 110 - 129 mmHg: +1 pt
+   - 130 - 149 mmHg: +2 pts
+   - 150 - 159 mmHg: +3 pts
+   - >= 160 mmHg: +4 pts
+
+F. LDL-Cholesterol (LDL-C)
+   - < 90 mg/dL: 0 pts
+   - 90 - 149 mg/dL: +1 pt
+   - >= 150 mg/dL: +2 pts
+
+G. HDL-Cholesterol (HDL-C)
+   - < 30 mg/dL: +5 pts
+   - 30 - 39 mg/dL: +4 pts
+   - 40 - 59 mg/dL: +3 pts
+   - 60 - 69 mg/dL: +2 pts
+   - 70 - 79 mg/dL: +1 pt
+   - >= 80 mg/dL: 0 pts
+
+
+2. Risk Categories (Total Points -> 10-Year CAD Risk)
+----------------------------------------------------
+
+| Total Points | Risk Category          | 10-Year CAD Risk (%) |
+|--------------|------------------------|----------------------|
+| 1 - 14       | 低風險 (Low)           | < 3%                 |
+| 15 - 17      | 邊緣風險 (Borderline)   | 3% - 7%              |
+| 18 - 19      | 中風險 (Intermediate)   | > 7%                 |
+| 20 - 24      | 高風險 (High)          | > 10%                |
+
+
+3. Exclusion Criteria (排除族群 - 應直接控制危險因子)
+----------------------------------------------------
+- 早發性心肌梗塞家族史
+- 家族性高膽固醇血症
+- 糖尿病 (DM)
+- 腎絲球過濾率 (eGFR) < 60
+- 結締組織疾病 / 自體免疫疾病
+- 惡性疾病 (Malignancy)
+
+Current Implementation File: D:\GeminiCLI\cvd_calculator.html

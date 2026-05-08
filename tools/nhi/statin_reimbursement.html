@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健保降血脂藥物給付規定 (2.6.1) 評估工具</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg: #f8f9fa;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: var(--primary); text-align: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        .section { margin-bottom: 25px; padding: 15px; border: 1px solid #eee; border-radius: 8px; }
+        .section-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: var(--secondary); border-left: 4px solid var(--secondary); padding-left: 10px; }
+        
+        .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .check-item input { width: 20px; height: 20px; cursor: pointer; }
+        
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; }
+        input[type="number"], select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+
+        .result-box { margin-top: 30px; display: none; padding: 20px; border-radius: 8px; border: 2px solid var(--secondary); background: #f0f7ff; }
+        .result-header { font-size: 1.3rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .threshold-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .info-card { background: white; padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+        .info-label { font-size: 0.85rem; color: #666; }
+        .info-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .status-msg { 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin-top: 15px; 
+            font-size: 1.6rem; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .eligible { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .not-eligible { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+        /* 新增：病歷複製區塊樣式 */
+        .copy-section {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fdfdfd;
+            border: 1px dashed var(--secondary);
+            border-radius: 8px;
+        }
+        .copy-title {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #soap-note {
+            width: 100%;
+            height: 150px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+            background: #fff;
+            color: #333;
+        }
+        .copy-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #2980b9; }
+        .copy-btn.success { background: var(--success); }
+
+        #notes { 
+            margin-top: 25px; 
+            font-size: 1.2rem; 
+            color: #333; 
+            background: none; 
+            padding: 15px 0; 
+            border-radius: 0; 
+            border-left: none;
+            border-top: 2px solid #eee;
+            line-height: 1.6;
+        }
+        #notes ul { margin: 15px 0 0 35px; padding: 0; }
+        #notes li { margin-bottom: 18px; }
+
+        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--secondary); font-size: 0.9rem; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="../../index.html" class="back-link">← 返回主頁</a>
+    <h1>健保降血脂藥物給付評估 (2.6.1)</h1>
+
+    <!-- 1. 極高風險因子 -->
+    <div class="section">
+        <div class="section-title">A. 極高風險 (滿足任一項)</div>
+        <label class="check-item"><input type="checkbox" id="acs"> 急性冠狀動脈症候群 (ACS) 病史</label>
+        <label class="check-item"><input type="checkbox" id="pci_cabg"> 曾接受心導管介入 (PCI) 或外科繞道 (CABG)</label>
+    </div>
+
+    <!-- 2. 高風險因子 -->
+    <div class="section">
+        <div class="section-title">B. 高風險 (滿足任一項)</div>
+        <label class="check-item"><input type="checkbox" id="cvd"> 冠狀動脈粥狀硬化 / 缺血性腦血管疾病</label>
+        <label class="check-item"><input type="checkbox" id="dm"> 糖尿病 (Diabetes)</label>
+    </div>
+
+    <!-- 3. 一般危險因子 (用於計數) -->
+    <div class="section">
+        <div class="section-title">C. 一般危險因子 (評估給付門檻)</div>
+        <div class="input-grid">
+            <div class="form-group">
+                <label>年齡 (Age)</label>
+                <input type="number" id="age" value="50">
+            </div>
+            <div class="form-group">
+                <label>性別 (Gender)</label>
+                <select id="gender" onchange="toggleMenopause()">
+                    <option value="male">男 (Male)</option>
+                    <option value="female">女 (Female)</option>
+                </select>
+            </div>
+        </div>
+        <div style="margin-top: 15px;">
+            <label class="check-item"><input type="checkbox" id="htn"> 高血壓 (Hypertension)</label>
+            <label class="check-item"><input type="checkbox" id="smoker"> 正在吸菸 (Smoking)</label>
+            <label class="check-item"><input type="checkbox" id="early_cad"> 早發性冠心病家族史 (男<=55, 女<=65)</label>
+            <label class="check-item"><input type="checkbox" id="low_hdl"> HDL-C < 40 mg/dL</label>
+            <label class="check-item" id="menopause-row" style="display: none;"><input type="checkbox" id="menopause"> 已停經 (女性適用)</label>
+        </div>
+    </div>
+
+    <!-- 4. 目前數值 -->
+    <div class="section">
+        <div class="section-title">D. 目前血脂數值</div>
+        <div class="input-grid">
+            <div class="form-group">
+                <label>LDL-C (mg/dL)</label>
+                <input type="number" id="ldl" placeholder="例如 135">
+            </div>
+            <div class="form-group">
+                <label>Total Chol (mg/dL)</label>
+                <input type="number" id="tc" placeholder="例如 210">
+            </div>
+        </div>
+    </div>
+
+    <button onclick="evaluateNHI()" style="width: 100%; padding: 15px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer;">立即評估給付標準</button>
+
+    <div id="result" class="result-box">
+        <div class="result-header" id="risk-category">計算中...</div>
+        <div class="threshold-info">
+            <div class="info-card">
+                <div class="info-label">起始給付門檻</div>
+                <div class="info-value" id="threshold-val">--</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">治療目標值</div>
+                <div class="info-value" id="target-val">--</div>
+            </div>
+        </div>
+        <div id="eligibility-status" class="status-msg"></div>
+
+        <!-- 新增：病歷複製區塊 (僅保留按鈕) -->
+        <div id="copy-area" style="display: none; text-align: center; margin: 20px 0; padding: 20px; background: #fdfdfd; border: 1px dashed var(--secondary); border-radius: 8px;">
+            <div style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">符合給付標準，可直接複製病歷紀錄：</div>
+            <button class="copy-btn" id="copy-btn-el" onclick="copyToClipboard()" style="font-size: 1.1rem; padding: 12px 30px;">一鍵複製 SOAP Note</button>
+            <textarea id="soap-note" style="display: none;"></textarea>
+        </div>
+
+        <div id="notes"></div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const copyText = document.getElementById("soap-note");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    
+    const btn = document.getElementById("copy-btn-el");
+    const originalText = btn.innerText;
+    btn.innerText = "已複製！";
+    btn.classList.add("success");
+    setTimeout(() => {
+        btn.innerText = originalText;
+        btn.classList.remove("success");
+    }, 2000);
+}
+
+function toggleMenopause() {
+    const gender = document.getElementById('gender').value;
+    const menopauseRow = document.getElementById('menopause-row');
+    const menopauseCheck = document.getElementById('menopause');
+    if (gender === 'female') {
+        menopauseRow.style.display = 'flex';
+    } else {
+        menopauseRow.style.display = 'none';
+        menopauseCheck.checked = false; // 強制取消勾選
+    }
+}
+
+function evaluateNHI() {
+    // 讀取輸入
+    const acs = document.getElementById('acs').checked;
+    const pci = document.getElementById('pci_cabg').checked;
+    const cvd = document.getElementById('cvd').checked;
+    const dm = document.getElementById('dm').checked;
+    
+    const age = parseInt(document.getElementById('age').value);
+    const gender = document.getElementById('gender').value;
+    const htn = document.getElementById('htn').checked;
+    const smoker = document.getElementById('smoker').checked;
+    const earlyCad = document.getElementById('early_cad').checked;
+    const lowHdl = document.getElementById('low_hdl').checked;
+    const menopause = document.getElementById('menopause').checked;
+    
+    const ldl = parseFloat(document.getElementById('ldl').value) || 0;
+    const tc = parseFloat(document.getElementById('tc').value) || 0;
+
+    // 計算危險因子數量
+    let rfCount = 0;
+    if (htn) rfCount++;
+    if (smoker) rfCount++;
+    if (earlyCad) rfCount++;
+    if (lowHdl) rfCount++;
+    
+    // 年齡危險因子
+    if (gender === 'male' && age >= 45) rfCount++;
+    if (gender === 'female' && (age >= 55 || menopause)) rfCount++;
+
+    let category = "";
+    let ldl_threshold = 0;
+    let tc_threshold = 0;
+    let ldl_target = 0;
+    let tc_target = 0;
+    let lifestyle_needed = false;
+
+    // 邏輯判斷 (優先級由高到低)
+    if (acs || pci) {
+        category = "極高風險族群";
+        ldl_threshold = 70;
+        ldl_target = 70;
+        lifestyle_needed = false;
+    } else if (cvd || dm) {
+        category = "高風險族群";
+        ldl_threshold = 100;
+        tc_threshold = 160;
+        ldl_target = 100;
+        tc_target = 160;
+        lifestyle_needed = false;
+    } else if (rfCount >= 2) {
+        category = "中高風險 (2+ 危險因子)";
+        ldl_threshold = 130;
+        tc_threshold = 200;
+        ldl_target = 130;
+        tc_target = 200;
+        lifestyle_needed = true;
+    } else if (rfCount === 1) {
+        category = "中低風險 (1 個危險因子)";
+        ldl_threshold = 160;
+        tc_threshold = 240;
+        ldl_target = 160;
+        tc_target = 240;
+        lifestyle_needed = true;
+    } else {
+        category = "低風險 (0 個危險因子)";
+        ldl_threshold = 190;
+        ldl_target = 190;
+        lifestyle_needed = true;
+    }
+
+    // 顯示結果
+    const resultBox = document.getElementById('result');
+    resultBox.style.display = 'block';
+    document.getElementById('risk-category').innerText = category;
+    
+    let thresholdText = `LDL-C ≧ ${ldl_threshold}`;
+    if (tc_threshold > 0) thresholdText += ` 或 TC ≧ ${tc_threshold}`;
+    document.getElementById('threshold-val').innerText = thresholdText;
+    
+    let targetText = `LDL-C < ${ldl_target}`;
+    if (tc_target > 0) targetText += ` 或 TC < ${tc_target}`;
+    document.getElementById('target-val').innerText = targetText;
+
+    const status = document.getElementById('eligibility-status');
+    const copyArea = document.getElementById('copy-area');
+    let isEligible = (ldl >= ldl_threshold) || (tc_threshold > 0 && tc >= tc_threshold);
+    
+    if (isEligible) {
+        status.innerText = "符合健保給付起始標準";
+        status.className = "status-msg eligible";
+        
+        // 產生病歷文字
+        let rfNames = [];
+        if (acs) rfNames.push("ACS");
+        if (pci) rfNames.push("PCI/CABG history");
+        if (cvd) rfNames.push("CVD/Stroke");
+        if (dm) rfNames.push("Diabetes");
+        if (htn) rfNames.push("Hypertension");
+        if (smoker) rfNames.push("Smoking");
+        if (earlyCad) rfNames.push("Early CAD family history");
+        if (lowHdl) rfNames.push("Low HDL-C");
+        if (gender === 'male' && age >= 45) rfNames.push("Age (Male >= 45)");
+        if (gender === 'female' && (age >= 55 || menopause)) rfNames.push("Age/Menopause (Female)");
+
+        let soap = `[Lipid Management Note]\n`;
+        soap += `Assessment:\n`;
+        soap += `- Hyperlipidemia, meets NHI 2.6.1 reimbursement criteria.\n`;
+        soap += `- Risk Level: ${category}`;
+        if (rfNames.length > 0) soap += ` (${rfNames.join(", ")})`;
+        soap += `\n- Current Profile: TC ${tc || '--'}, LDL-C ${ldl || '--'} mg/dL (Threshold: ${thresholdText})\n\n`;
+        soap += `Plan:\n`;
+        if (lifestyle_needed) {
+            soap += `- Lifestyle modification (diet & exercise) for 3-6 months was tried/discussed.\n`;
+        }
+        soap += `- Target: ${targetText}\n`;
+        soap += `- Statin therapy initiated/continued.`;
+        
+        document.getElementById('soap-note').value = soap;
+        copyArea.style.display = 'block';
+    } else {
+        status.innerText = "目前未達健保給付起始標準";
+        status.className = "status-msg not-eligible";
+        copyArea.style.display = 'none';
+    }
+
+    let notes = "<strong>臨床備註：</strong><ul>";
+    if (lifestyle_needed) {
+        notes += "<li>此族群依規定應<strong>先進行 3-6 個月非藥物治療</strong> (飲食控制、運動)。若仍未達標方可給付藥物。</li>";
+    } else {
+        notes += "<li>此族群藥物治療與生活型態調整可並行給付。</li>";
+    }
+    if (smoker) {
+        notes += "<li style='color: #e74c3c;'>吸菸者若僅因吸菸一項因子而符合標準但未戒菸者，其治療應予自費。</li>";
+    }
+    notes += "<li>數值單位均為 mg/dL。</li>";
+    notes += "</ul>";
+    document.getElementById('notes').innerHTML = notes;
+    
+    // 滾動到結果
+    resultBox.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

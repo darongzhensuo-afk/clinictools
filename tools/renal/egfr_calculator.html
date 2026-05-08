@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>腎功能 eGFR 計算器 (MDRD / CKD-EPI)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #16a085;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--secondary); font-size: 0.9rem; }
+        .back-link:hover { text-decoration: underline; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        
+        button { 
+            width: 100%; padding: 15px; background-color: var(--secondary); color: white; border: none; 
+            border-radius: 6px; font-size: 1.1em; cursor: pointer; margin-top: 20px; transition: background 0.3s;
+        }
+        button:hover { background-color: #1abc9c; }
+
+        .results { margin-top: 30px; display: none; }
+        .result-card { border: 2px solid var(--secondary); padding: 20px; border-radius: 8px; background: #fafffe; text-align: center; }
+        .gfr-value { font-size: 3rem; font-weight: bold; color: var(--secondary); margin: 10px 0; }
+        .stage-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; margin-bottom: 15px; }
+        
+        .info-section { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; }
+        .info-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-size: 1.1rem; }
+        .clinical-notes { font-size: 1.1rem; line-height: 1.7; color: #444; }
+        .clinical-notes ul { margin-left: 20px; }
+
+        /* Stage Colors */
+        .stage-1 { background-color: #27ae60; } /* Normal */
+        .stage-2 { background-color: #2ecc71; } /* Mild */
+        .stage-3a { background-color: #f1c40f; color: #333 !important; } /* Mild-Mod */
+        .stage-3b { background-color: #f39c12; } /* Mod-Severe */
+        .stage-4 { background-color: #e67e22; } /* Severe */
+        .stage-5 { background-color: #e74c3c; } /* Failure */
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="../../index.html" class="back-link">← 返回主頁</a>
+    <h1>腎功能 eGFR 計算器</h1>
+
+    <div class="grid">
+        <div class="form-group">
+            <label>血清肌酸酐 (Creatinine, mg/dL)</label>
+            <input type="number" id="creatinine" value="1.0" step="0.01">
+        </div>
+        <div class="form-group">
+            <label>年齡 (Age)</label>
+            <input type="number" id="age" value="60">
+        </div>
+        <div class="form-group">
+            <label>性別 (Gender)</label>
+            <select id="gender">
+                <option value="male">男 (Male)</option>
+                <option value="female">女 (Female)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>計算公式</label>
+            <select id="formula">
+                <option value="ckdepi">CKD-EPI (2021 版 - 推薦)</option>
+                <option value="mdrd">MDRD (傳統簡化版)</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="calculateGFR()">立即計算 eGFR 與分期</button>
+
+    <div id="results" class="results">
+        <div class="result-card">
+            <div id="stage-display" class="stage-badge">計算中...</div>
+            <div class="info-label">預估腎絲球過濾率 (eGFR)</div>
+            <div class="gfr-value" id="gfr-val">--</div>
+            <div style="font-size: 0.9rem; color: #666;">單位: ml/min/1.73m²</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-title">臨床建議與 CKD 分期</div>
+            <div class="clinical-notes" id="clinical-notes"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculateGFR() {
+    const scr = parseFloat(document.getElementById('creatinine').value);
+    const age = parseFloat(document.getElementById('age').value);
+    const gender = document.getElementById('gender').value;
+    const formula = document.getElementById('formula').value;
+
+    let egfr = 0;
+
+    if (formula === 'mdrd') {
+        // MDRD simplified: 186 * (Scr^-1.154) * (Age^-0.203) * (0.742 if female)
+        egfr = 186 * Math.pow(scr, -1.154) * Math.pow(age, -0.203);
+        if (gender === 'female') egfr *= 0.742;
+    } else {
+        // CKD-EPI 2021 (Race-free): Recommended by NKF/ASN
+        const kappa = (gender === 'female') ? 0.7 : 0.9;
+        const alpha = (gender === 'female') ? -0.241 : -0.302;
+        const multiplier = (gender === 'female') ? 142 * 1.012 : 142;
+        
+        egfr = multiplier * 
+               Math.pow(Math.min(scr / kappa, 1), alpha) * 
+               Math.pow(Math.max(scr / kappa, 1), -1.2) * 
+               Math.pow(0.9938, age);
+    }
+
+    displayResults(egfr.toFixed(1));
+}
+
+function displayResults(gfr) {
+    const resultsDiv = document.getElementById('results');
+    const gfrVal = document.getElementById('gfr-val');
+    const stageBadge = document.getElementById('stage-display');
+    const notes = document.getElementById('clinical-notes');
+
+    resultsDiv.style.display = 'block';
+    gfrVal.innerText = gfr;
+
+    let stage = "";
+    let stageClass = "";
+    let advice = "";
+
+    if (gfr >= 90) {
+        stage = "第一期 (G1)";
+        stageClass = "stage-1";
+        advice = "腎功能正常。請維持良好生活習慣，定期追蹤。";
+    } else if (gfr >= 60) {
+        stage = "第二期 (G2)";
+        stageClass = "stage-2";
+        advice = "腎功能輕度下降。建議控制血壓、血糖，避免服用非類固醇消炎止痛藥 (NSAIDs)。";
+    } else if (gfr >= 45) {
+        stage = "第三期 A (G3a)";
+        stageClass = "stage-3a";
+        advice = "腎功能輕度至中度下降。應積極治療原發疾病，注意藥物劑量調整，建議每 6 個月追蹤一次。";
+    } else if (gfr >= 30) {
+        stage = "第三期 B (G3b)";
+        stageClass = "stage-3b";
+        advice = "腎功能中度至重度下降。強烈建議控制飲食（低磷、低鉀視情況），嚴格控制血壓，預防併發症。";
+    } else if (gfr >= 15) {
+        stage = "第四期 (G4)";
+        stageClass = "stage-4";
+        advice = "腎功能重度下降。應考慮照會腎臟專科醫師，討論替代療法（透析/移植）之預備。";
+    } else {
+        stage = "第五期 (G5)";
+        stageClass = "stage-5";
+        advice = "腎衰竭。應由腎臟專科醫師評估血液透析、腹膜透析或腎臟移植之必要性。";
+    }
+
+    stageBadge.innerText = stage;
+    stageBadge.className = "stage-badge " + stageClass;
+    
+    notes.innerHTML = `
+        <p><strong>分期結果：</strong> ${stage}</p>
+        <p><strong>臨床建議：</strong> ${advice}</p>
+        <hr>
+        <p style="font-size: 0.9rem; color: #666;">
+            <strong>註記：</strong><br>
+            1. 本工具採用的 CKD-EPI 2021 公式為目前國際推廣之「去種族化」版本。<br>
+            2. 計算結果僅供臨床參考，實際診斷應結合病患之尿液檢查（如微量白蛋白）及臨床病史。
+        </p>
+    `;
+
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

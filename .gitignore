@@ -1,0 +1,14 @@
+# 排除大型安裝檔
+vscode_installer.exe
+
+# 排除 Python 打包產生的暫存與輸出
+build/
+dist/
+*.spec
+__pycache__/
+
+# 排除 IDE 設定
+.vscode/
+
+# 排除本地 log
+*.log

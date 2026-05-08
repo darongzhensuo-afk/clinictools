@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVD Risk Calculator (Taiwan Context)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { 
+            width: 100%; padding: 15px; background-color: var(--secondary-color); color: white; border: none; 
+            border-radius: 6px; font-size: 1.1em; cursor: pointer; margin-top: 20px; transition: background 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        .results { margin-top: 30px; display: none; }
+        .result-card { border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .result-title { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; color: var(--secondary-color); }
+        .risk-value { font-size: 2em; font-weight: bold; color: var(--accent-color); }
+        .recommendation { background: #e8f4fd; border-left: 5px solid var(--secondary-color); padding: 15px; margin-top: 20px; }
+        .bp-standard { font-size: 0.85em; color: #666; margin-top: 10px; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 10px; vertical-align: middle; }
+        .badge-tw { background: #d4edda; color: #155724; }
+        .badge-us { background: #fff3cd; color: #856404; }
+        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--secondary-color); font-size: 0.9rem; }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="../../index.html" class="back-link">← 返回主頁</a>
+    <h1>CVD 風險計算器 (台灣臨床專用)</h1>
+    
+    <div class="grid">
+        <div class="form-group">
+            <label>年齡 (Age): 35-79</label>
+            <input type="number" id="age" value="55" min="35" max="79">
+        </div>
+        <div class="form-group">
+            <label>性別 (Gender)</label>
+            <select id="gender">
+                <option value="male">男 (Male)</option>
+                <option value="female">女 (Female)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>總膽固醇 (Total Chol, mg/dL) <small style="color:#666">(ASCVD 用)</small></label>
+            <input type="number" id="tc" value="200">
+        </div>
+        <div class="form-group">
+            <label>LDL 膽固醇 (mg/dL) <small style="color:#666">(TwCCCC 用)</small></label>
+            <input type="number" id="ldl" value="130">
+        </div>
+        <div class="form-group">
+            <label>HDL 膽固醇 (mg/dL)</label>
+            <input type="number" id="hdl" value="50">
+        </div>
+        <div class="form-group">
+            <label>收縮壓 (Systolic BP, mmHg)</label>
+            <input type="number" id="sbp" value="135">
+        </div>
+        <div class="form-group">
+            <label>服用高血壓藥物 (On BP Meds)</label>
+            <select id="bp_meds">
+                <option value="0">否 (No)</option>
+                <option value="1">是 (Yes)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>BMI (kg/m²) <small style="color:#666">(TwCCCC 必填)</small></label>
+            <input type="number" id="bmi" value="25" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>糖尿病 (Diabetes)</label>
+            <select id="dm">
+                <option value="0">否 (No)</option>
+                <option value="1">是 (Yes)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>正在抽菸 (Current Smoker)</label>
+            <select id="smoker">
+                <option value="0">否 (No)</option>
+                <option value="1">是 (Yes)</option>
+            </select>
+        </div>
+    </div>
+
+    <button onclick="calculate()">立即計算風險與處置建議</button>
+
+    <div id="results" class="results">
+        <div class="grid">
+            <div class="result-card">
+                <div class="result-title">TwCCCC 台灣本土模型 <span class="badge badge-tw">10年冠心病風險</span></div>
+                <div class="risk-value" id="tw-risk">--%</div>
+                <p id="tw-desc">適用於台灣族群。目前評分: <strong id="tw-points-display">--</strong></p>
+            </div>
+            <div class="result-card">
+                <div class="result-title">ASCVD (ACC/AHA) <span class="badge badge-us">10年綜合風險</span></div>
+                <div class="risk-value" id="us-risk">--%</div>
+                <p id="us-desc">美國標準模型，台灣族群可能高估約 1.9 倍。</p>
+            </div>
+        </div>
+
+        <div class="recommendation">
+            <h3>臨床處置建議 (2024 TSC/THS 指引)</h3>
+            <div id="rec-content"></div>
+            <div class="bp-standard">
+                <strong>血壓治療啟動標準：</strong> 根據 2022/2024 台灣指引，居家血壓 (HBPM) 達 <strong>130/80 mmHg</strong> 即應考慮啟動治療。建議落實 <strong>「722原則」</strong> 監測。
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    const age = parseFloat(document.getElementById('age').value);
+    const gender = document.getElementById('gender').value;
+    const tc = parseFloat(document.getElementById('tc').value);
+    const ldl = parseFloat(document.getElementById('ldl').value);
+    const hdl = parseFloat(document.getElementById('hdl').value);
+    const sbp = parseFloat(document.getElementById('sbp').value);
+    const bmi = parseFloat(document.getElementById('bmi').value);
+    const dm = parseInt(document.getElementById('dm').value);
+    const smoker = parseInt(document.getElementById('smoker').value);
+
+    // 1. TwCCCC Calculation (Matched to Acta Cardiol Sin 2023;39:496)
+    let twPoints = 0;
+    
+    // Age Points
+    if (age >= 75) twPoints += 8;
+    else if (age >= 70) twPoints += 7;
+    else if (age >= 65) twPoints += 6;
+    else if (age >= 60) twPoints += 5;
+    else if (age >= 55) twPoints += 4;
+    else if (age >= 50) twPoints += 3;
+    else if (age >= 45) twPoints += 2;
+    else if (age >= 40) twPoints += 1;
+
+    // Gender Points
+    if (gender === 'male') twPoints += 3;
+
+    // BMI Points
+    if (bmi >= 26) twPoints += 2;
+    else if (bmi >= 22) twPoints += 1;
+
+    // Smoking Points
+    if (smoker) twPoints += 2;
+
+    // SBP Points
+    if (sbp >= 160) twPoints += 4;
+    else if (sbp >= 150) twPoints += 3;
+    else if (sbp >= 130) twPoints += 2;
+    else if (sbp >= 110) twPoints += 1;
+
+    // HDL Points
+    if (hdl >= 80) twPoints += 0;
+    else if (hdl >= 70) twPoints += 1;
+    else if (hdl >= 60) twPoints += 2;
+    else if (hdl >= 40) twPoints += 3;
+    else if (hdl >= 30) twPoints += 4;
+    else twPoints += 5;
+
+    // LDL Points
+    if (ldl >= 150) twPoints += 2;
+    else if (ldl >= 90) twPoints += 1;
+
+    // TwCCCC Risk Mapping (Exact Categories from Image)
+    let twRiskLevel = "";
+    let twRiskPercent = "";
+    if (twPoints >= 20) {
+        twRiskLevel = "高風險 (High)";
+        twRiskPercent = "> 10%";
+    } else if (twPoints >= 18) {
+        twRiskLevel = "中風險 (Intermediate)";
+        twRiskPercent = "> 7%";
+    } else if (twPoints >= 15) {
+        twRiskLevel = "邊緣風險 (Borderline)";
+        twRiskPercent = "3-7%";
+    } else {
+        twRiskLevel = "低風險 (Low)";
+        twRiskPercent = "< 3%";
+    }
+
+    // 2. ASCVD (Exact Pooled Cohort Equations - 2013 ACC/AHA)
+    const lnAge = Math.log(age);
+    const lnTC = Math.log(tc);
+    const lnHdl = Math.log(hdl);
+    const lnSbp = Math.log(sbp);
+    const bpMeds = parseInt(document.getElementById('bp_meds').value);
+    
+    let sum = 0;
+    let s0 = 0;
+    let mean = 0;
+
+    if (gender === 'male') {
+        sum = (12.344 * lnAge) + (11.853 * lnTC) + (-2.664 * lnAge * lnTC) + (-7.990 * lnHdl) + (1.769 * lnAge * lnHdl) + (bpMeds ? 1.797 * lnSbp : 1.764 * lnSbp) + (smoker ? 7.837 : 0) + (smoker ? -1.795 * lnAge : 0) + (dm ? 0.658 : 0);
+        s0 = 0.9144; mean = 61.18;
+    } else {
+        sum = (-29.799 * lnAge) + (4.884 * Math.pow(lnAge, 2)) + (13.540 * lnTC) + (-3.114 * lnAge * lnTC) + (-13.578 * lnHdl) + (3.149 * lnAge * lnHdl) + (bpMeds ? 2.019 * lnSbp : 1.957 * lnSbp) + (smoker ? 7.574 : 0) + (smoker ? -1.665 * lnAge : 0) + (dm ? 0.661 : 0);
+        s0 = 0.9665; mean = -29.18;
+    }
+    let usRisk = ((1 - Math.pow(s0, Math.exp(sum - mean))) * 100).toFixed(1);
+
+    // Display
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('tw-risk').innerText = twRiskLevel;
+    document.getElementById('tw-points-display').innerText = twPoints + " (" + twRiskPercent + ")";
+    document.getElementById('us-risk').innerText = usRisk + "%";
+
+    // Recommendations
+    let rec = "<ul>";
+    rec += "<li style='color: #e67e22;'><strong>排除族群提醒：</strong> 若有早發性心肌梗塞家族史、家族性高膽固醇血症、腎絲球過濾率 < 60、自體免疫疾病、惡性疾病等，應直接控制危險因子。</li>";
+    
+    if (sbp >= 130) {
+        rec += "<li><strong>血壓管理：</strong> 您的血壓已達 130 mmHg。依據台灣指引，應啟動生活型態調整，並建議開始藥物治療以維持在 <130/80。</li>";
+    } else {
+        rec += "<li><strong>血壓管理：</strong> 目前血壓尚在理想範圍，請維持均衡飲食。</li>";
+    }
+
+    if (twPoints >= 20 || dm) {
+        rec += "<li><strong>血脂目標：</strong> 您屬於高風險族群，建議 LDL-C 目標應控制在 < 70 或 100 mg/dL (視合併症而定)。</li>";
+    } else {
+        rec += "<li><strong>血脂目標：</strong> 建議 LDL-C 維持在 < 130 mg/dL。</li>";
+    }
+
+    if (smoker) rec += "<li><strong>戒菸建議：</strong> 抽菸會顯著增加 CVD 風險，建議啟動戒菸諮詢。</li>";
+    if (bmi >= 24) rec += "<li><strong>體重管理：</strong> BMI 偏高，建議減重 5-10% 以改善代謝指標。</li>";
+    
+    rec += "</ul>";
+    document.getElementById('rec-content').innerHTML = rec;
+}
+</script>
+
+</body>
+</html>
