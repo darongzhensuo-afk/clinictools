@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高尿酸血症與痛風治療評估 (2024 指引)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e67e22;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334e68;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: block;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .checkbox-item:hover {
+            background: #f1f5f9;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+        .result-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .result-box {
+            background: #f8fafc;
+            border-left: 5px solid var(--secondary);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .med-choice {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .med-preferred {
+            background: #eefdf3;
+            border-left: 4px solid var(--success);
+        }
+        .med-warning {
+            background: #fff9eb;
+            border-left: 4px solid var(--warning);
+        }
+        .med-danger {
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .btn-home {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            text-decoration: none;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>痛風與高尿酸血症評估</h1>
+
+    <div class="input-group">
+        <label for="sua">血尿酸值 (sUA, mg/dL):</label>
+        <input type="number" id="sua" step="0.1" placeholder="例如: 8.5">
+    </div>
+
+    <div class="section">
+        <span class="section-title">1. 臨床症狀 (可多選)</span>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="hasGout"> 曾有痛風發作</label>
+            <label class="checkbox-item"><input type="checkbox" id="freqGout"> 頻繁發作 (每年 ≥ 2次)</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasTophi"> 有痛風石 (臨床或影像)</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasDamage"> 影像顯示關節受損</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasStone"> 有尿路結石 (Urolithiasis) 病史</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasOA"> 合併退化性關節炎 (OA)</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="section-title">2. 合併共病症</span>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="hasCKD"> 慢性腎臟病 (CKD Stage 3+ 或 eGFR < 60)</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasMetabolic"> 高血壓 / 糖尿病 / 代謝症候群</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasCVD"> 缺血性心臟病史</label>
+            <label class="checkbox-item"><input type="checkbox" id="hasCirrhosis"> 肝硬化 (Cirrhosis)</label>
+        </div>
+    </div>
+
+    <button onclick="calculate()">開始評估</button>
+
+    <div id="result">
+        <span class="result-title">評估結果</span>
+        <div id="startRecommendation" class="result-box"></div>
+        <div id="targetResult" class="result-box"></div>
+        <div id="medicationResult"></div>
+    </div>
+
+    <a href="../../index.html" class="btn-home">⬅ 返回工具首頁</a>
+    <div class="footer">
+        依據 2024 TASGH 指引與台灣健保規範整理<br>
+        僅供臨床參考，實際處置請依醫師判斷
+    </div>
+</div>
+
+<script>
+function calculate() {
+    const sua = parseFloat(document.getElementById('sua').value);
+    const hasGout = document.getElementById('hasGout').checked;
+    const freqGout = document.getElementById('freqGout').checked;
+    const hasTophi = document.getElementById('hasTophi').checked;
+    const hasDamage = document.getElementById('hasDamage').checked;
+    const hasStone = document.getElementById('hasStone').checked;
+    const hasOA = document.getElementById('hasOA').checked;
+    const hasCKD = document.getElementById('hasCKD').checked;
+    const hasMetabolic = document.getElementById('hasMetabolic').checked;
+    const hasCVD = document.getElementById('hasCVD').checked;
+    const hasCirrhosis = document.getElementById('hasCirrhosis').checked;
+
+    if (isNaN(sua)) {
+        alert("請輸入尿酸值");
+        return;
+    }
+
+    let shouldStart = false;
+    let reason = "";
+    let target = 6.0;
+
+    // 啟動邏輯
+    if (hasTophi || hasDamage || freqGout) {
+        shouldStart = true;
+        reason = "強烈建議啟動：具痛風石、關節受損或頻繁發作。";
+    } else if (hasGout) {
+        if (hasStone) {
+            shouldStart = true;
+            reason = "建議啟動：痛風病史合併尿路結石。";
+        } else if (sua > 9.0) {
+            shouldStart = true;
+            reason = "建議啟動：痛風首次發作且 sUA > 9.0 mg/dL。";
+        } else if (hasCKD && sua > 7.0) {
+            shouldStart = true;
+            reason = "建議啟動：痛風首次發作且合併 CKD 3+ 及 sUA > 7.0 mg/dL。";
+        } else if (hasOA) {
+            shouldStart = true;
+            reason = "建議啟動：痛風病史合併退化性關節炎 (2024 更新)。";
+        }
+    } else {
+        // 無症狀
+        if (sua >= 9.0) {
+            shouldStart = true;
+            reason = "考慮啟動：無症狀但 sUA ≥ 9.0 mg/dL。";
+        } else if (hasCKD && sua > 7.0) {
+            shouldStart = true;
+            reason = "建議啟動：無症狀但合併 CKD 3+ 且 sUA > 7.0 mg/dL (保護腎功能)。";
+        } else if ((hasMetabolic || hasCVD) && sua >= 8.0) {
+            shouldStart = true;
+            reason = "考慮啟動：無症狀且合併代謝/心血管風險，sUA ≥ 8.0 mg/dL。";
+        }
+    }
+
+    // 目標值邏輯
+    if (hasTophi) {
+        target = 5.0;
+    }
+
+    // 顯示結果
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+
+    const startRec = document.getElementById('startRecommendation');
+    if (shouldStart) {
+        startRec.style.borderLeftColor = "var(--danger)";
+        startRec.innerHTML = `<strong>啟動建議：</strong> <span style="color:var(--danger)">建議開始 ULT 治療</span><br><small>${reason}</small>`;
+    } else {
+        startRec.style.borderLeftColor = "var(--success)";
+        startRec.innerHTML = `<strong>啟動建議：</strong> 目前未達強烈啟動標準，建議生活衛教與定期追蹤。`;
+    }
+
+    document.getElementById('targetResult').innerHTML = `<strong>治療目標 (Target)：</strong> sUA < ${target.toFixed(1)} mg/dL`;
+
+    // 藥物建議邏輯
+    let medHtml = `<span class="section-title">藥物選擇建議：</span>`;
+    
+    // Febuxostat
+    if (hasCKD || hasCirrhosis) {
+        medHtml += `<div class="med-choice med-preferred"><strong>Febuxostat:</strong> 健保第一線給付 (符合 CKD 3+ 或肝硬化)。對輕中度腎功能不全不需調劑量。</div>`;
+    } else {
+        medHtml += `<div class="med-choice med-warning"><strong>Febuxostat:</strong> 健保第二線 (需先試過 Allopurinol/Benzbromarone 無效或有禁忌)。</div>`;
+    }
+    if (hasCVD) {
+        medHtml += `<div class="med-choice med-warning"><small>⚠️ 注意：有心血管疾病史，使用 Febuxostat 建議謹慎監測。</small></div>`;
+    }
+
+    // Allopurinol
+    medHtml += `<div class="med-choice med-warning"><strong>Allopurinol:</strong> 傳統首選，但強烈建議先測 <strong>HLA-B*5801</strong> 基因以防嚴重的過敏反應 (SJS)。${hasCKD ? '<br><small>! 腎功能不全者需減量使用。</small>' : ''}</div>`;
+
+    // Benzbromarone
+    if (hasStone) {
+        medHtml += `<div class="med-choice med-danger"><strong>Benzbromarone:</strong> <span style="color:var(--danger)">禁忌症！</span> 患者有尿路結石病史，不可使用。</div>`;
+    } else if (hasCKD) {
+        medHtml += `<div class="med-choice med-warning"><strong>Benzbromarone:</strong> 腎功能不全者 (eGFR < 30) 效果差，不建議使用。</div>`;
+    } else {
+        medHtml += `<div class="med-choice"><strong>Benzbromarone:</strong> 可作為首選之一，建議多喝水並監測肝功能。</div>`;
+    }
+
+    document.getElementById('medicationResult').innerHTML = medHtml;
+}
+</script>
+
+</body>
+</html>
