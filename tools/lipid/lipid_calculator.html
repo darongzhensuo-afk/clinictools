@@ -98,6 +98,10 @@
             cursor: pointer;
             transition: opacity 0.2s;
         }
+        button.calculate {
+            background: var(--secondary);
+            color: white;
+        }
         button.reset {
             background: #e2e8f0;
             color: #475569;
@@ -155,6 +159,7 @@
     </div>
 
     <div class="actions">
+        <button class="calculate" onclick="calculateMissing()">開始計算</button>
         <button class="reset" onclick="resetForm()">清除數據</button>
         <a href="../../index.html" style="flex: 1; text-decoration: none;">
             <button class="back" style="width: 100%;">返回首頁</button>
@@ -169,12 +174,6 @@
 <script>
     const inputs = ['tc', 'tg', 'hdl', 'ldl'].map(id => document.getElementById(id));
 
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            calculateMissing();
-        });
-    });
-
     function calculateMissing() {
         const values = {};
         let filledCount = 0;
@@ -182,7 +181,7 @@
 
         inputs.forEach(input => {
             const val = parseFloat(input.value);
-            if (!isNaN(val)) {
+            if (!isNaN(val) && input.value !== '') {
                 values[input.id] = val;
                 filledCount++;
                 input.classList.remove('calculated');
@@ -209,14 +208,10 @@
                 missingInput.value = Math.round(result * 10) / 10;
                 missingInput.classList.add('calculated');
             }
-        } else if (filledCount < 3) {
-            // If less than 3, clear previous auto-calculated fields
-            inputs.forEach(input => {
-                if (input.classList.contains('calculated')) {
-                    input.value = '';
-                    input.classList.remove('calculated');
-                }
-            });
+        } else if (filledCount === 4) {
+            alert('四項數值已填滿，若要重新計算，請先清除其中一項。');
+        } else {
+            alert('請至少輸入任意三項數值以計算第四項。');
         }
     }
 
