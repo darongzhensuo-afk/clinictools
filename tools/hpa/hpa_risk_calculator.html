@@ -218,9 +218,13 @@
     function calcBMI() {
         const h = parseFloat(document.getElementById('height').value) / 100;
         const w = parseFloat(document.getElementById('weight').value);
+        const bmiField = document.getElementById('bmi');
+        
         if (h > 0 && w > 0) {
             const bmi = (w / (h * h)).toFixed(1);
-            document.getElementById('bmi').value = bmi;
+            bmiField.value = bmi;
+        } else {
+            bmiField.value = '';
         }
     }
 
