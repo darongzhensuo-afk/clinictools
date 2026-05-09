@@ -8,6 +8,8 @@
 | **CVD 風險計算器** | 2026/05/08 | TwCCCC (2023) & ASCVD 模型 | `tools/cvd/cvd_calculator.html` |
 | **健保降血脂給付評估** | 2026/05/08 | 2.6.1 規範、SOAP Note 一鍵複製 | `tools/nhi/statin_reimbursement.html` |
 | **腎功能 eGFR 計算器** | 2026/05/08 | CKD-EPI (2021) 與 MDRD 雙公式 | `tools/renal/egfr_calculator.html` |
+| **10年慢性病風險評估** | 2026/05/09 | 國健署 10 年風險模型 (預留單機版介接) 與處置建議 | `tools/hpa/hpa_risk_calculator.html` |
+| **HPA 成人健檢摘要** | 2026/05/09 | 2025 新制 (30歲起、增項尿酸) 與風險預測模型 | `tools/hpa/adult_health_checkup_summary.md` |
 | **血脂自動換算** | 2026/05/09 | Friedewald 公式四項參數換算 (修正手動計算) | `tools/lipid/lipid_calculator.html` |
 
 ## 🧠 醫學邏輯與健保規範摘要 (Medical Logic)
@@ -26,6 +28,7 @@
 
 ## 📜 開發歷史紀錄 (Development History)
 ### 2026-05-09 (血脂工具修正與規範強化)
+- **新功能:** 實作「10年慢性病風險評估」前端工具。整合 35-70 歲國人本土風險模型參數，並提供紅、黃、綠燈分級處置建議，預留國健署官方「單機版 SDK」串接介面。
 - **Bug Fix:** 修正「血脂自動換算」工具。移除即時監聽邏輯，改為「開始計算」按鈕觸發，提升計算穩定性。
 - **Dashboard 更新:** 同步更新 `index.html` 工具卡片日期。
 - **規範強化:** 於 `GEMINI.md` 增加準則，要求未來工具異動需同步更新首頁日期。
@@ -41,6 +44,7 @@
 - 整合 `index.html` 診所首頁。
 
 ## 📅 未來擴充計畫 (Future Tasks)
+- [ ] 介接 **HPA 慢性病風險評估** 官方單機版 SDK (等待申請核可)。
 - [ ] 增加 **15 年中風風險** 計算 (TwCCCC Stroke Model)。
 - [ ] 增加 **心房顫動 (Af)** 之 CHADS2/CHA2DS2-VASc 評分。
 - [ ] 串接更多健保藥物 (如高血壓、抗血小板藥物) 的給付門檻。

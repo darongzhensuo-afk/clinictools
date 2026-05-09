@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慢性病風險評估 (國健署 API 預留版) - 大容診所</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #334e68;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --success: #27ae60;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        header { text-align: center; margin-bottom: 20px; grid-column: 1 / -1; }
+        h1 { color: var(--primary); font-size: 1.6rem; margin: 0 0 5px 0; }
+        .subtitle { color: #627d98; font-size: 0.9rem; margin: 0; }
+        .api-badge { background: #ffe082; color: #d84315; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-top: 10px;}
+        
+        .section-title { font-size: 1.1rem; color: var(--secondary); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 0;}
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { margin-bottom: 5px; }
+        .full-width { grid-column: 1 / -1; }
+        
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--primary); font-size: 0.9rem; }
+        input[type="number"], select {
+            width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--secondary); }
+        
+        .radio-group { display: flex; gap: 15px; margin-top: 5px;}
+        .radio-group label { font-weight: normal; color: #475569; display: flex; align-items: center; gap: 5px;}
+        
+        button {
+            width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 20px;
+        }
+        button:hover { background: #2980b9; }
+        button.back { background: var(--primary); margin-top: 10px; }
+        
+        /* Result Section */
+        .result-item { padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
+        .result-name { font-weight: bold; color: var(--primary); }
+        .risk-value { font-size: 1.2rem; font-weight: bold; }
+        
+        .risk-low { border-left: 5px solid var(--success); background: #f0fff4; }
+        .risk-med { border-left: 5px solid var(--warning); background: #fffcf5; }
+        .risk-high { border-left: 5px solid var(--danger); background: #fdf2f2; }
+        
+        .risk-low .risk-value { color: var(--success); }
+        .risk-med .risk-value { color: var(--warning); }
+        .risk-high .risk-value { color: var(--danger); }
+
+        .advice-box { padding: 15px; border-radius: 8px; font-size: 0.9rem; color: #334e68; line-height: 1.6; margin-top: 20px; display: none;}
+        .advice-box h4 { margin: 0 0 10px 0; font-size: 1.1rem;}
+        .advice-box ul { margin: 0; padding-left: 20px; }
+        
+        .advice-low { background: #dcfce3; border: 1px solid var(--success); }
+        .advice-low h4 { color: var(--success); }
+        
+        .advice-med { background: #fef08a; border: 1px solid var(--warning); }
+        .advice-med h4 { color: #b45309; }
+        
+        .advice-high { background: #fee2e2; border: 1px solid var(--danger); }
+        .advice-high h4 { color: var(--danger); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>10年慢性病風險評估</h1>
+        <p class="subtitle">依據國健署「科學算病館」本土模型 (35-70歲適用)</p>
+        <div class="api-badge">⚠️ 模擬模式：等待官方 API 審核介接中</div>
+    </header>
+
+    <!-- 輸入區 -->
+    <div class="card">
+        <h2 class="section-title">基本資料與生理指標</h2>
+        <div class="input-grid">
+            <div class="input-group">
+                <label>性別</label>
+                <select id="gender">
+                    <option value="M">男性</option>
+                    <option value="F">女性</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>年齡 (歲)</label>
+                <input type="number" id="age" placeholder="35 - 70" min="35" max="70">
+            </div>
+            <div class="input-group">
+                <label>身高 (公分)</label>
+                <input type="number" id="height" placeholder="170" oninput="calcBMI()">
+            </div>
+            <div class="input-group">
+                <label>體重 (公斤)</label>
+                <input type="number" id="weight" placeholder="70" oninput="calcBMI()">
+            </div>
+            <div class="input-group">
+                <label>BMI</label>
+                <input type="number" id="bmi" readonly style="background: #f8fafc;">
+            </div>
+            <div class="input-group">
+                <label>腰圍 (公分)</label>
+                <input type="number" id="waist" placeholder="85">
+            </div>
+            <div class="input-group">
+                <label>收縮壓 (mmHg)</label>
+                <input type="number" id="sbp" placeholder="120">
+            </div>
+            <div class="input-group">
+                <label>舒張壓 (mmHg)</label>
+                <input type="number" id="dbp" placeholder="80">
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 20px;">血液檢驗與病史</h2>
+        <div class="input-grid">
+            <div class="input-group">
+                <label>空腹血糖 (mg/dL)</label>
+                <input type="number" id="glucose" placeholder="95">
+            </div>
+            <div class="input-group">
+                <label>總膽固醇 TC (mg/dL)</label>
+                <input type="number" id="tc" placeholder="190">
+            </div>
+            <div class="input-group">
+                <label>三酸甘油酯 TG (mg/dL)</label>
+                <input type="number" id="tg" placeholder="140">
+            </div>
+            <div class="input-group">
+                <label>高密度脂蛋白 HDL (mg/dL)</label>
+                <input type="number" id="hdl" placeholder="45">
+            </div>
+            <div class="input-group">
+                <label>低密度脂蛋白 LDL (mg/dL)</label>
+                <input type="number" id="ldl" placeholder="110">
+            </div>
+            
+            <div class="input-group full-width">
+                <label>是否有吸菸習慣？</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="smoking" value="1"> 是</label>
+                    <label><input type="radio" name="smoking" value="0" checked> 否</label>
+                </div>
+            </div>
+            <div class="input-group full-width">
+                <label>是否已診斷為糖尿病？</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="dm" value="1"> 是</label>
+                    <label><input type="radio" name="dm" value="0" checked> 否</label>
+                </div>
+            </div>
+            <div class="input-group full-width">
+                <label>是否已診斷為高血壓？</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="htn" value="1"> 是</label>
+                    <label><input type="radio" name="htn" value="0" checked> 否</label>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="simulateAPICall()" id="calcBtn">開始評估 (模擬API連線)</button>
+        <a href="../../index.html" style="text-decoration: none;">
+            <button class="back">返回首頁</button>
+        </a>
+    </div>
+
+    <!-- 結果區 -->
+    <div class="card" id="resultContainer" style="opacity: 0.5; pointer-events: none;">
+        <h2 class="section-title">未來 10 年發病風險評估</h2>
+        
+        <div id="resultsList">
+            <!-- 動態生成結果 -->
+            <div style="text-align: center; color: #94a3b8; padding: 20px;">請填寫左側資料並點擊計算</div>
+        </div>
+
+        <div id="adviceBox" class="advice-box">
+            <h4 id="adviceTitle">處置建議</h4>
+            <div id="adviceContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calcBMI() {
+        const h = parseFloat(document.getElementById('height').value) / 100;
+        const w = parseFloat(document.getElementById('weight').value);
+        if (h > 0 && w > 0) {
+            const bmi = (w / (h * h)).toFixed(1);
+            document.getElementById('bmi').value = bmi;
+        }
+    }
+
+    // 模擬 API 延遲與回傳邏輯
+    function simulateAPICall() {
+        const btn = document.getElementById('calcBtn');
+        btn.innerText = "連線中...";
+        btn.disabled = true;
+
+        setTimeout(() => {
+            renderResults(mockCalculateRisk());
+            btn.innerText = "重新評估 (模擬API連線)";
+            btn.disabled = false;
+        }, 800);
+    }
+
+    // 基於臨床經驗的 Mock 計算邏輯 (未來將替換為真實 API)
+    function mockCalculateRisk() {
+        const age = parseFloat(document.getElementById('age').value) || 50;
+        const sbp = parseFloat(document.getElementById('sbp').value) || 120;
+        const glucose = parseFloat(document.getElementById('glucose').value) || 90;
+        const waist = parseFloat(document.getElementById('waist').value) || 80;
+        const smoking = document.querySelector('input[name="smoking"]:checked').value === "1";
+        
+        // 簡單的風險權重計算 (非真實 Cox 數值)
+        let baseRisk = (age - 35) * 0.2;
+        if (sbp > 130) baseRisk += 3;
+        if (sbp > 140) baseRisk += 5;
+        if (glucose > 100) baseRisk += 4;
+        if (waist > 90) baseRisk += 3;
+        if (smoking) baseRisk += 6;
+
+        return {
+            mace: Math.min(Math.max(baseRisk * 1.5, 1.2), 35).toFixed(1),
+            chd: Math.min(Math.max(baseRisk * 1.2, 0.8), 25).toFixed(1),
+            stroke: Math.min(Math.max(baseRisk * 1.3, 1.0), 28).toFixed(1),
+            dm: document.querySelector('input[name="dm"]:checked').value === "1" ? null : Math.min(Math.max(baseRisk * 1.8, 2.0), 40).toFixed(1),
+            htn: document.querySelector('input[name="htn"]:checked').value === "1" ? null : Math.min(Math.max(baseRisk * 1.6, 3.0), 45).toFixed(1)
+        };
+    }
+
+    function renderResults(data) {
+        document.getElementById('resultContainer').style.opacity = '1';
+        
+        const metrics = [
+            { id: 'mace', name: '心血管不良事件 (MACE)', val: data.mace },
+            { id: 'chd', name: '冠心病', val: data.chd },
+            { id: 'stroke', name: '腦中風', val: data.stroke },
+            { id: 'dm', name: '糖尿病', val: data.dm },
+            { id: 'htn', name: '高血壓', val: data.htn }
+        ];
+
+        let html = '';
+        let highestRisk = 0;
+
+        metrics.forEach(m => {
+            if (m.val === null) {
+                html += `
+                <div class="result-item" style="background:#f1f5f9; color:#94a3b8;">
+                    <div class="result-name">${m.name}</div>
+                    <div>已確診，不適用預測</div>
+                </div>`;
+            } else {
+                const val = parseFloat(m.val);
+                if (val > highestRisk) highestRisk = val;
+                
+                let riskClass = 'risk-low';
+                if (val >= 20) riskClass = 'risk-high';
+                else if (val >= 10) riskClass = 'risk-med';
+
+                html += `
+                <div class="result-item ${riskClass}">
+                    <div class="result-name">${m.name}</div>
+                    <div class="risk-value">${m.val}%</div>
+                </div>`;
+            }
+        });
+
+        document.getElementById('resultsList').innerHTML = html;
+        renderAdvice(highestRisk);
+    }
+
+    function renderAdvice(maxRisk) {
+        const adviceBox = document.getElementById('adviceBox');
+        const adviceTitle = document.getElementById('adviceTitle');
+        const adviceContent = document.getElementById('adviceContent');
+        
+        adviceBox.style.display = 'block';
+        adviceBox.className = 'advice-box'; // reset
+
+        if (maxRisk >= 20) {
+            adviceBox.classList.add('advice-high');
+            adviceTitle.innerText = "🚨 高風險 (紅燈：風險大於 20%)";
+            adviceContent.innerHTML = `
+                <ul>
+                    <li><b>強烈建議立即就醫</b>，啟動相關慢性病檢查與治療。</li>
+                    <li>需加入代謝症候群防治計畫，進行積極的醫療與生活介入。</li>
+                    <li>嚴格控制血壓 (<130/80) 與低密度脂蛋白 (LDL)，戒除菸酒。</li>
+                </ul>
+            `;
+        } else if (maxRisk >= 10) {
+            adviceBox.classList.add('advice-med');
+            adviceTitle.innerText = "⚠️ 中風險 (黃燈：風險 10% - 20%)";
+            adviceContent.innerHTML = `
+                <ul>
+                    <li>您處於疾病發生的中度風險區，建議進一步諮詢醫師。</li>
+                    <li>請落實「三低一高」飲食原則（低油、低糖、低鹽、高纖）。</li>
+                    <li>建立規律運動習慣（每週 150 分鐘中強度運動），並控制體重。</li>
+                </ul>
+            `;
+        } else {
+            adviceBox.classList.add('advice-low');
+            adviceTitle.innerText = "✅ 低風險 (綠燈：風險小於 10%)";
+            adviceContent.innerHTML = `
+                <ul>
+                    <li>您的慢性病發生風險較低，請繼續保持！</li>
+                    <li>維持目前的健康飲食與規律運動習慣。</li>
+                    <li>建議定期利用國健署「成人預防保健服務」追蹤數據。</li>
+                </ul>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>
