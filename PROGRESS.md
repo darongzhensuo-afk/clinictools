@@ -45,6 +45,9 @@
     - **安全性提升:** 增加全欄位必填驗證，防止數據不完全導致的錯誤計算。
     - 整合國健署各年齡層之平均風險基準值 (Population Average)，確保燈號判定精準。
 - **維護:** 更新 `index.html` 之工具卡片狀態，新增 IBW 計算器入口。
+- **部署優化:** 
+    - 排除 `hpa_health_risk/` (SDK/JRE) 與 `nhriDB/` (本地資料庫) 等超過 100MB 的大型二進位檔案，以符合 GitHub 上傳限制。
+    - 成功將所有前端工具（包含 CVD, NHI, Renal, Lipid, Gout, HPA, IBW）推送至遠端 GitHub 儲存庫。
 
 ### 2026-05-08 (重大更新：自動化與擴充)
 - **基礎建設:** 安裝 Git 並自動化 GitHub 同步 (Repository: `clinictools`)。
