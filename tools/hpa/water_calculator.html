@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日飲水量計算機 (Evidence-Based)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .result-box {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .info-section {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            border: 1px solid #ffeeba;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>每日飲水量計算機</h2>
+    
+    <div class="input-group">
+        <label for="weight">體重 (kg)</label>
+        <input type="number" id="weight" placeholder="請輸入體重" min="10" max="300" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label for="activity">活動程度 / 環境</label>
+        <select id="activity" onchange="calculate()">
+            <option value="30">久坐 / 一般室內 (30 ml/kg)</option>
+            <option value="35">輕度活動 / 空調環境 (35 ml/kg)</option>
+            <option value="40">中度活動 / 炎熱環境 (40 ml/kg)</option>
+            <option value="45">重度勞動 / 大量出汗 (45 ml/kg)</option>
+        </select>
+    </div>
+
+    <div id="result" class="result-box" style="display: none;">
+        <div>預估每日總飲水量：</div>
+        <div class="result-value"><span id="water-vol">0</span> mL</div>
+        <div style="margin-top: 5px; font-size: 0.9rem;">
+            相當於約 <span id="cups">0</span> 杯 (240ml/杯)
+        </div>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ 臨床提醒：</strong><br>
+        本計算機僅適用於健康成年人。若患有<strong>心臟衰竭、慢性腎臟病 (CKD)、肝硬化水腫</strong>或特定內分泌疾病，請務必遵循醫囑限水，切勿過量飲水。
+    </div>
+
+    <div class="info-section">
+        <strong>科學依據：</strong>
+        <ul>
+            <li><strong>基礎公式：</strong> 根據 NASEM 與 EFSA 指引，成年人每日總水分攝取建議為 30-35 mL/kg。</li>
+            <li><strong>食物佔比：</strong> 總水分需求中，約有 20% 來自食物，80% 來自液體。本計算機已將食物佔比扣除，呈現建議之<strong>純水/飲品攝取量</strong>。</li>
+            <li><strong>監測指標：</strong> 除了體重公式，最簡單的監測方式是觀察<strong>尿液顏色</strong>（應呈現淡黃色）。</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        最後更新：2026-05-12 | 證據來源：EFSA / NASEM
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const weight = document.getElementById('weight').value;
+        const multiplier = document.getElementById('activity').value;
+        const resultDiv = document.getElementById('result');
+        
+        if (weight > 0) {
+            // Total Water requirement
+            const totalWater = weight * multiplier;
+            // Drinking water requirement (approx 80% of total, as 20% comes from food)
+            const drinkingWater = Math.round(totalWater * 0.8);
+            
+            document.getElementById('water-vol').innerText = drinkingWater.toLocaleString();
+            document.getElementById('cups').innerText = (drinkingWater / 240).toFixed(1);
+            
+            resultDiv.style.display = 'block';
+        } else {
+            resultDiv.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
