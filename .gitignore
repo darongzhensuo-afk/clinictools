@@ -10,5 +10,9 @@ __pycache__/
 # 排除 IDE 設定
 .vscode/
 
+# 排除 HPA 離線版與資料庫 (大型檔案)
+hpa_health_risk/
+nhriDB/
+
 # 排除本地 log
 *.log

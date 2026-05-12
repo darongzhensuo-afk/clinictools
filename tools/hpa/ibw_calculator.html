@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理想體重與 BMI 計算器 - 大容診所</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #334e68;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --success: #27ae60;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        header { text-align: center; margin-bottom: 20px; grid-column: 1 / -1; }
+        h1 { color: var(--primary); font-size: 1.6rem; margin: 0 0 5px 0; }
+        .subtitle { color: #627d98; font-size: 0.9rem; margin: 0; }
+        
+        .section-title { font-size: 1.1rem; color: var(--secondary); margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 0;}
+        .input-group { margin-bottom: 20px; }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary); font-size: 0.9rem; }
+        input[type="number"] {
+            width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; transition: 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--secondary); }
+        
+        button {
+            width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; margin-top: 10px;
+        }
+        button:hover { background: #2980b9; }
+        button.back { background: var(--primary); margin-top: 10px; }
+        
+        .result-box { margin-top: 20px; }
+        .result-item { padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px;}
+        .result-label { font-size: 0.85rem; color: #64748b; font-weight: 600; }
+        .result-value { font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+        
+        .bmi-status { padding: 4px 10px; border-radius: 4px; font-size: 0.9rem; font-weight: bold; color: white; display: inline-block; margin-top: 5px;}
+        .status-underweight { background-color: #3498db; } /* 藍色 */
+        .status-healthy { background-color: #27ae60; }     /* 綠色 */
+        .status-overweight { background-color: #f39c12; }  /* 橘色 */
+        .status-obese-1 { background-color: #e67e22; }     /* 深橘 */
+        .status-obese-2 { background-color: #e74c3c; }     /* 紅色 */
+        .status-obese-3 { background-color: #c0392b; }     /* 深紅 */
+
+        .reference-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        .reference-table th, .reference-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        .reference-table th { background-color: #f8fafc; color: var(--primary); }
+        
+        .diff-text { font-size: 0.9rem; margin-top: 5px; font-weight: 600; }
+        .diff-plus { color: var(--danger); }
+        .diff-minus { color: var(--secondary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>理想體重與 BMI 計算器</h1>
+        <p class="subtitle">依據衛生福利部國民健康署 (HPA) 標準</p>
+    </header>
+
+    <!-- 輸入區 -->
+    <div class="card">
+        <h2 class="section-title">輸入生理指標</h2>
+        <div class="input-group">
+            <label for="height">身高 (公分)</label>
+            <input type="number" id="height" placeholder="例如: 170" step="0.1">
+        </div>
+        <div class="input-group">
+            <label for="weight">體重 (公斤)</label>
+            <input type="number" id="weight" placeholder="例如: 65" step="0.1">
+        </div>
+        
+        <button onclick="calculate()">立即計算</button>
+        <a href="../../index.html" style="text-decoration: none;">
+            <button class="back">返回首頁</button>
+        </a>
+
+        <div style="margin-top: 30px;">
+            <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 10px;">成人體型判定標準 (BMI)</h3>
+            <table class="reference-table">
+                <thead>
+                    <tr>
+                        <th>分類</th>
+                        <th>BMI 範圍</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>體重過輕</td><td>< 18.5</td></tr>
+                    <tr style="background-color: #f0fdf4;"><td>健康體重</td><td>18.5 ≤ BMI < 24</td></tr>
+                    <tr><td>體重過重</td><td>24 ≤ BMI < 27</td></tr>
+                    <tr><td>輕度肥胖</td><td>27 ≤ BMI < 30</td></tr>
+                    <tr><td>中度肥胖</td><td>30 ≤ BMI < 35</td></tr>
+                    <tr><td>重度肥胖</td><td>BMI ≥ 35</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 結果區 -->
+    <div class="card" id="resultCard" style="opacity: 0.5; pointer-events: none;">
+        <h2 class="section-title">計算結果</h2>
+        
+        <div class="result-box">
+            <div class="result-item">
+                <span class="result-label">目前的 BMI</span>
+                <div>
+                    <span id="res-bmi" class="result-value">--</span>
+                    <span id="res-status" class="bmi-status" style="display: none;">健康</span>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">理想體重 (IBW)</span>
+                <span id="res-ibw" class="result-value">-- 公斤</span>
+                <span style="font-size: 0.8rem; color: #64748b;">(以 BMI = 22 計算)</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">健康體重範圍</span>
+                <span id="res-range" class="result-value">-- 公斤</span>
+                <span style="font-size: 0.8rem; color: #64748b;">(理想體重 ± 10%)</span>
+            </div>
+
+            <div class="result-item" id="diff-section" style="display: none;">
+                <span class="result-label">建議調整</span>
+                <div id="res-diff" class="diff-text">--</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const heightCm = parseFloat(document.getElementById('height').value);
+        const weightKg = parseFloat(document.getElementById('weight').value);
+
+        if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) {
+            alert("請輸入有效的身高與體重資料。");
+            return;
+        }
+
+        const heightM = heightCm / 100;
+        const bmi = weightKg / (heightM * heightM);
+        const ibw = 22 * (heightM * heightM);
+        const rangeLow = ibw * 0.9;
+        const rangeHigh = ibw * 1.1;
+
+        // 顯示結果卡片
+        const resultCard = document.getElementById('resultCard');
+        resultCard.style.opacity = '1';
+        resultCard.style.pointerEvents = 'auto';
+
+        // 填入數值
+        document.getElementById('res-bmi').innerText = bmi.toFixed(1);
+        document.getElementById('res-ibw').innerText = ibw.toFixed(1) + " 公斤";
+        document.getElementById('res-range').innerText = rangeLow.toFixed(1) + " ~ " + rangeHigh.toFixed(1) + " 公斤";
+
+        // 判定 BMI 狀態
+        const statusEl = document.getElementById('res-status');
+        statusEl.style.display = 'inline-block';
+        statusEl.className = 'bmi-status'; // reset
+        
+        let statusText = "";
+        if (bmi < 18.5) {
+            statusText = "體重過輕";
+            statusEl.classList.add('status-underweight');
+        } else if (bmi < 24) {
+            statusText = "健康體重";
+            statusEl.classList.add('status-healthy');
+        } else if (bmi < 27) {
+            statusText = "體重過重";
+            statusEl.classList.add('status-overweight');
+        } else if (bmi < 30) {
+            statusText = "輕度肥胖";
+            statusEl.classList.add('status-obese-1');
+        } else if (bmi < 35) {
+            statusText = "中度肥胖";
+            statusEl.classList.add('status-obese-2');
+        } else {
+            statusText = "重度肥胖";
+            statusEl.classList.add('status-obese-3');
+        }
+        statusEl.innerText = statusText;
+
+        // 體重差異分析
+        const diffSection = document.getElementById('diff-section');
+        const diffEl = document.getElementById('res-diff');
+        diffSection.style.display = 'block';
+
+        if (weightKg > rangeHigh) {
+            const diff = weightKg - rangeHigh;
+            diffEl.innerHTML = `需減少 <span class="diff-plus">${diff.toFixed(1)}</span> 公斤方能進入健康範圍。`;
+        } else if (weightKg < rangeLow) {
+            const diff = rangeLow - weightKg;
+            diffEl.innerHTML = `需增加 <span class="diff-minus">${diff.toFixed(1)}</span> 公斤方能進入健康範圍。`;
+        } else {
+            diffEl.innerHTML = `<span class="status-healthy" style="padding: 2px 8px; border-radius: 4px; color: white;">維持現狀</span> 目前體重在健康範圍內。`;
+        }
+    }
+</script>
+
+</body>
+</html>
